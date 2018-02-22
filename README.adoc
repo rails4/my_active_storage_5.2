@@ -100,8 +100,10 @@ git checkout -b google-cloud-storage
 ```
 
 [NOTE]
+====
 Korzystanie z GCS ma sens dla wdrożonej aplikacji, np. na Heroku.
 W development prościej jest przechowywać załączniki loklanie na dysku.
+====
 
 . http://edgeguides.rubyonrails.org/active_storage_overview.html[Active Storage Overview]
   (Edge Guides)
