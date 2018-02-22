@@ -99,6 +99,11 @@ Podłączanie aplikacji do Google Cloud Strorage (GCS) wykonamy na gałęzi:
 git checkout -b google-cloud-storage
 ```
 
+[WARNING]
+====
+Begin with simpler solution: Dropbox, Google Disk, Sigma
+====
+
 [NOTE]
 ====
 Korzystanie z GCS ma sens dla wdrożonej aplikacji, np. na Heroku.
