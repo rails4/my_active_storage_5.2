@@ -1,0 +1,11 @@
+<p id="notice"><%= notice %></p>
+
+<p><%= image_tag @blunder.image %></p>
+
+<p>
+  <strong>Description:</strong>
+  <%= @blunder.description %>
+</p>
+
+<%= link_to 'Edit', edit_blunder_path(@blunder) %> |
+<%= link_to 'Back', blunders_path %>

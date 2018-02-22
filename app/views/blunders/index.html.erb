@@ -1,0 +1,27 @@
+<p id="notice"><%= notice %></p>
+
+<h1>Blunders</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>Description</th>
+      <th colspan="3"></th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @blunders.each do |blunder| %>
+      <tr>
+        <td><%= blunder.description %></td>
+        <td><%= link_to 'Show', blunder %></td>
+        <td><%= link_to 'Edit', edit_blunder_path(blunder) %></td>
+        <td><%= link_to 'Destroy', blunder, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<br>
+
+<%= link_to 'New Blunder', new_blunder_path %>

@@ -1,0 +1,150 @@
+# Blunders on Google Cloud Storage
+
+Zaczynamy od wygenerowania szablonu aplikacji CRUD: zdjęcia z opisami
+```sh
+rails new my_cloud_storage_5.2 \
+  --skip-bundle --skip-test --skip-action-mailer --skip-action-cable --skip-coffee
+bundle install
+bin/rails active_storage:install
+rails db:migrate
+```
+
+
+## Development
+
+https://www.engineyard.com/blog/active-storage[Tutorial on how to use Active Storage on Rails 5.2]:
+
+```sh
+rails g scaffold blunder description:text
+rails db:migrate
+```
+
+Do zarządzania zdjęciami użyjemy „Active Storage”.
+We wcześniejszych wersjach Rails do zarządzania _załącznikami_ wykorzystywano
+gemy Carrierweave, Paperclip.
+
+Update files content.
+
+.app/models/comment.rb
+```ruby
+class Blunder < ApplicationRecord
+  has_one_attached :image
+end
+```
+
+### ActiveStorage na konsoli
+
+Attach an image to the blunder.
+```ruby
+blunder = Blunder.new description: 'strange design'
+blunder.image.attach io: File.open("images/otkrytost.png"), filename: "otkrytost.png", content_type: "image/png"
+```
+Does the blunder have an image?
+```ruby
+blunder.image.attached? # => true
+```
+Synchronicznie usuń the image oraz powiązane zasoby.
+```ruby
+blunder.image.purge
+```
+To samo tylko asynchronicznie via Active Job
+```ruby
+blunder.image.purge_later
+```
+
+Generate a permanent URL for the blob that points to the application.
+Upon access, a redirect to the actual service endpoint is returned.
+This indirection decouples the public URL from the actual one, and
+allows for example mirroring attachments in different services for
+high-availability. The redirection has an HTTP expiration of 5 min.
+```ruby
+url_for(blunder.image) # nie działa na konsoli
+```
+
+For many attachments, see https://github.com/rails/rails/tree/master/activestorage[Active Storage]
+
+
+### Formularz
+
+.app/views/_form.html.erb
+```html
+<div class="field">
+  <p><%= form.file_field :image %>
+  <p><%= form.label :description %>
+  <p><%= form.text_area :description %>
+</div>
+```
+
+.app/views/_show.html.erb
+```html
+<p><%= image_tag @blunder.image %></p>
+```
+
+.app/controllers/blunders_controller.rb
+```ruby
+class BlundersController < ApplicationController
+
+  private
+
+  def blunder_params
+    params.require(:blunder).permit(:description, :image)
+  end
+```
+
+
+## Production
+
+Podłączanie aplikacji do Google Cloud Strorage (GCS) wykonamy na gałęzi:
+```sh
+git checkout -b google-cloud-storage
+```
+
+[NOTE]
+Korzystanie z GCS ma sens dla wdrożonej aplikacji, np. na Heroku.
+W development prościej jest przechowywać załączniki loklanie na dysku.
+
+. http://edgeguides.rubyonrails.org/active_storage_overview.html[Active Storage Overview]
+  (Edge Guides)
+
+Active Storage is enabled by default when you create a new Rails application.
+_config/active_storage.yml_ is created (*FALSE*) and
+_config.active_storage.service_ is set to :local on both _development.rb_ and
+_production.rb_ (*TRUE*).
+
+local is set to use Disk and the _storage_ directory is used.
+
+```yaml
+local:
+  service: Disk
+  root: <%= Rails.root.join("storage") %>
+```
+
+
+## Konfiguracja GCS
+
+. https://console.cloud.google.com/start[GCP] – Witamy w Google Cloud Storage!
+. https://console.cloud.google.com/home/dashboard[Dashboard]
+. https://github.com/fog/fog-google[Fog] – an alternative?
+
+Przykłady AS:
+
+. https://afreshcup.com/home/2017/07/23/activestorage-samples[Active Storage Samples]
+
+Examples on Google Cloud Platform:
+
+. https://cloud.google.com/ruby[Ruby example]
+
+
+## Konfiguracja aplikacji Rails 5.2
+
+To change Active Storage specify _config.active_storage.service_ to :amazon,
+:google, or :microsoft and set the appropriate values on _config/storage.yml_.
+
+https://www.engineyard.com/blog/rails-encrypted-credentials-on-rails-5.2[Rails Encrypted Credentials on Rails 5.2]:
+
+```sh
+EDITOR="atom --wait" bin/rails credentials:edit
+# https://www.engineyard.com/blog/encrypted-configuration-on-rails-5.2
+# generate RAILS_MASTER_KEY
+bundle exec rails runner "puts ActiveSupport::EncryptedConfiguration.generate_key"
+```

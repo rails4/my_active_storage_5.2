@@ -1,0 +1,23 @@
+<%= form_with(model: blunder, local: true) do |form| %>
+  <% if blunder.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(blunder.errors.count, "error") %> prohibited this blunder from being saved:</h2>
+
+      <ul>
+      <% blunder.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <p><%= form.file_field :image %>
+    <p><%= form.label :description %>
+    <p><%= form.text_area :description %>
+  </div>
+
+  <div class="actions">
+    <%= form.submit %>
+  </div>
+<% end %>
